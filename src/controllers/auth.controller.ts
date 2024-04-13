@@ -6,7 +6,8 @@ import { DB_SECRET } from "../..";
 
 const SignUpUser = async (req: Request, res: Response) => {
   try {
-    const { fullname, email, password, address } = req.body;
+    const { fullname, email, password, address, country, state, city, phone } =
+      req.body;
     const isUserExists = await PrismaClient.user.findUnique({
       where: {
         email,
@@ -23,6 +24,10 @@ const SignUpUser = async (req: Request, res: Response) => {
         email,
         password: encryprtedPassword,
         address,
+        country,
+        state,
+        city,
+        phone,
       },
     });
 

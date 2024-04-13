@@ -1,8 +1,9 @@
 import express from "express";
-import { getMenu } from "../controllers/menu.controller";
+import { calculateTotal, getMenu } from "../controllers/menu.controller";
+import { validateToken } from "../middlewares/auth.middleware";
 
 const MenuRouter = express.Router();
 
-MenuRouter.get("/", getMenu);
-
+MenuRouter.get("/", validateToken, getMenu);
+MenuRouter.get("/calculate", validateToken, calculateTotal);
 export { MenuRouter };

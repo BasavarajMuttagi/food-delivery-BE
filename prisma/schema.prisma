@@ -19,9 +19,14 @@ model User {
   email     String     @unique
   password  String
   address   String
+  phone     String     @db.VarChar(13)
+  country   String
+  state     String
+  city      String
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   favorite  Favorite[]
+  Order     Order[]
 }
 
 model Favorite {
@@ -35,21 +40,13 @@ model Favorite {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  userId      Int
+  id          String     @id @default(cuid())
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
   totalAmount Float
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  OrderItems  OrderItem[]
-}
-
-model OrderItem {
-  id       String   @id @default(cuid())
-  order    Order    @relation(fields: [orderId], references: [id])
-  orderId  String
-  quantity Int
-  item     MenuItem @relation(fields: [itemId], references: [id])
-  itemId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       MenuItem[]
 }
 
 model MenuItem {
@@ -61,7 +58,7 @@ model MenuItem {
   category    IndianMenuCategory
   imageUrl    String             @default("https://assets.cntraveller.in/photos/60ba2522c28d168a1ec862a3/16:9/w_960,c_limit/Tea-.jpg")
   Favorite    Favorite[]
-  OrderItem   OrderItem[]
+  orders      Order[]
 }
 
 enum DIET {

@@ -9,6 +9,7 @@ import { createServer } from "http";
 
 import { tokenType, validateToken } from "./src/middlewares/auth.middleware";
 import { MenuRouter } from "./src/routes/menu.route";
+import { OrderRouter } from "./src/routes/order.route";
 const App = express();
 const HttpServer = createServer(App);
 
@@ -25,6 +26,7 @@ App.get("/", (req, res) => {
 });
 
 App.use("/menu", MenuRouter);
+App.use("/order", OrderRouter);
 HttpServer.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
 });

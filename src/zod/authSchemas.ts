@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import z from "zod";
 const userLoginSchema = z.object({
   email: z.string().email(),
   password: z
@@ -11,7 +10,7 @@ const userLoginSchema = z.object({
 type userLoginType = z.infer<typeof userLoginSchema>;
 
 const userSignUpSchema = z.object({
-  fullname: z.string().min(3),
+  fullname: z.string(),
   email: z.string().email(),
   password: z
     .string()
@@ -21,9 +20,14 @@ const userSignUpSchema = z.object({
     .string()
     .min(8, { message: "password cannot be less than 8 digits" })
     .max(10, { message: "password cannot be more than 10 digits" }),
-  address: z.string().min(3).max(30),
+  phone: z.string(),
+  city: z.string(),
+  state: z.string(),
+  country: z.string(),
+  address: z.string(),
 });
 
 type userSignUpType = z.infer<typeof userSignUpSchema>;
 
-export { userLoginSchema, userSignUpSchema, userLoginType, userSignUpType };
+export { userLoginSchema, userSignUpSchema };
+export type { userLoginType, userSignUpType };

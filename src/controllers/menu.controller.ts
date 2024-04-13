@@ -28,18 +28,22 @@ const getMenu = async (req: Request, res: Response) => {
   }
 };
 
-export { getMenu };
+const calculateTotal = async (req: Request, res: Response) => {
+  try {
+    const result = await PrismaClient.menuItem.aggregate({
+      _sum: {
+        price: true,
+      },
+      where: {
+        id: {
+          in: ["cluxqw2j00000oun25qtx135b", "cluxqw3u70001oun2nzzhyq3a"],
+        },
+      },
+    });
+    return res.status(201).send(result);
+  } catch (error) {
+    return res.send(error);
+  }
+};
 
-interface Item {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  dietType: string;
-  category: string;
-  imageUrl: string;
-}
-
-interface GroupedItems {
-  [category: string]: Item[];
-}
+export { getMenu, calculateTotal };
