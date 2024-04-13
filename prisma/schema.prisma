@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  fullname  String
+  email     String     @unique
+  password  String
+  address   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  favorite  Favorite[]
+}
+
+model Favorite {
+  id     String   @id @default(cuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  item   MenuItem @relation(fields: [itemId], references: [id])
+  itemId String
+
+  @@unique([userId, itemId])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      Int
+  totalAmount Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  OrderItems  OrderItem[]
+}
+
+model OrderItem {
+  id       String   @id @default(cuid())
+  order    Order    @relation(fields: [orderId], references: [id])
+  orderId  String
+  quantity Int
+  item     MenuItem @relation(fields: [itemId], references: [id])
+  itemId   String
+}
+
+model MenuItem {
+  id          String             @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  dietType    DIET               @default(VEG)
+  category    IndianMenuCategory
+  imageUrl    String             @default("https://assets.cntraveller.in/photos/60ba2522c28d168a1ec862a3/16:9/w_960,c_limit/Tea-.jpg")
+  Favorite    Favorite[]
+  OrderItem   OrderItem[]
+}
+
+enum DIET {
+  VEG
+  NON_VEG
+}
+
+enum IndianMenuCategory {
+  APPETIZERS
+  MAIN_COURSES
+  BREADS
+  RICE
+  ACCOMPANIMENTS
+  DESSERTS
+  BEVERAGES
+}
