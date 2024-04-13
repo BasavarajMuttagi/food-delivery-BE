@@ -11,6 +11,7 @@ const getMenu = async (req: Request, res: Response) => {
       FROM (
         SELECT category, json_agg(
           json_build_object(
+            'id', id,
             'name', name,
             'description', description,
             'price', price,
