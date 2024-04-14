@@ -209,10 +209,9 @@ const applyDiscount = async (subtotal: number, couponCode: string) => {
   throw new Error("coupon invalid");
 };
 
-function isDateInRange(dateToCheck: Date, startDate: Date, endDate: Date) {
-  console.log(dateToCheck, startDate, endDate);
+const isDateInRange = (dateToCheck: Date, startDate: Date, endDate: Date) => {
   return dateToCheck >= startDate && dateToCheck <= endDate;
-}
+};
 
 type DiscountResult = {
   subtotal: number;
