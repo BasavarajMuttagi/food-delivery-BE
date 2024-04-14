@@ -28,6 +28,22 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
+const getQuote = async (req: Request, res: Response) => {
+  try {
+    const { items } = req.body;
+    const itemPricePromises = items.map(async (element: Item) => {
+      const price = await getMenuItemPriceByID(element.itemId);
+      return { ...element, price: price! };
+    });
+    const ItemsArray: Item[] = await Promise.all(itemPricePromises);
+    const subtotal = calculateTotalAmount(ItemsArray);
+    const tax = subtotal * 0.18;
+
+    return res.status(200).send({ subtotal, tax, GrandTotal: subtotal + tax });
+  } catch (error) {
+    return res.send(error);
+  }
+};
 const getOrderById = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
@@ -74,7 +90,7 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 };
 
-export { createOrder, getOrderById, getAllOrders };
+export { createOrder, getOrderById, getAllOrders, getQuote };
 
 function calculateTotalAmount(items: Item[]) {
   return items.reduce((total, item) => total + item.quantity * item.price, 0);
