@@ -86,9 +86,9 @@ model TaxRule {
 model CouponCode {
   id                String       @id @default(cuid())
   code              String       @unique
-  discount          DiscountType
+  discountType      DiscountType
   value             Float
-  minimumOrderValue Float?
+  minimumOrderValue Float
   startDate         DateTime
   endDate           DateTime
   createdAt         DateTime     @default(now())
