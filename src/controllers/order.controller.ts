@@ -7,7 +7,7 @@ import { TaxRule } from "@prisma/client";
 const createOrder = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
-    const { items } = req.body;
+    const { items, couponCode } = req.body;
     const { ItemsArray, subtotal, tax, GrandTotal, taxRate } =
       await calculateQuote(items);
 
@@ -32,8 +32,8 @@ const createOrder = async (req: Request, res: Response) => {
 
 const getQuote = async (req: Request, res: Response) => {
   try {
-    const { items } = req.body;
-    const result = await calculateQuote(items);
+    const { items, couponCode } = req.body;
+    const result = await calculateQuote(items, couponCode);
     return res.status(200).send(result);
   } catch (error) {
     return res.send(error);
@@ -92,7 +92,7 @@ const calculateTotalAmount = async (items: Item[]) => {
   return items.reduce((total, item) => total + item.quantity * item.price, 0);
 };
 
-const calculateQuote = async (items: Item[]) => {
+const calculateQuote = async (items: Item[], couponCode?: string) => {
   const itemPricePromises = items.map(async (element: Item) => {
     const price = await getMenuItemPriceByID(element.itemId);
     return { ...element, price: price! };
@@ -100,7 +100,10 @@ const calculateQuote = async (items: Item[]) => {
   const result = (await getTaxInfo()) as TaxRule;
 
   const ItemsArray: Item[] = await Promise.all(itemPricePromises);
-  const subtotal = await calculateTotalAmount(ItemsArray);
+  let subtotal = await calculateTotalAmount(ItemsArray);
+  if (couponCode) {
+    subtotal -= subtotal * (10 / 100);
+  }
   const tax = subtotal * (result.taxRate / 100);
   const GrandTotal = subtotal + tax;
   return {
@@ -114,6 +117,20 @@ const calculateQuote = async (items: Item[]) => {
 };
 
 const getTaxInfo = async () => {
+  try {
+    const result = await PrismaClient.taxRule.findUnique({
+      where: {
+        id: "cluzefx4g000037p5y1e49ji8",
+      },
+    });
+
+    return result;
+  } catch (error) {
+    return error;
+  }
+};
+
+const getDiscount = async () => {
   try {
     const result = await PrismaClient.taxRule.findUnique({
       where: {

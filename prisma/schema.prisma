@@ -83,6 +83,23 @@ model TaxRule {
   createdAt DateTime @default(now())
 }
 
+model CouponCode {
+  id                String       @id @default(cuid())
+  code              String       @unique
+  discount          DiscountType
+  value             Float
+  minimumOrderValue Float?
+  startDate         DateTime
+  endDate           DateTime
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
 enum DIET {
   VEG
   NON_VEG
