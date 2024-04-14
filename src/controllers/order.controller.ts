@@ -7,15 +7,14 @@ const createOrder = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
     const { items } = req.body;
-    const itemPricePromises = items.map(async (element: Item) => {
-      const price = await getMenuItemPriceByID(element.itemId);
-      return { ...element, price: price! };
-    });
-    const ItemsArray: Item[] = await Promise.all(itemPricePromises);
+    const { ItemsArray, subtotal, tax, GrandTotal } = await calculateQuote(
+      items
+    );
+
     const order = await PrismaClient.order.create({
       data: {
         userId: user.userId,
-        totalAmount: calculateTotalAmount(ItemsArray),
+        totalAmount: GrandTotal,
         OrderItem: {
           create: ItemsArray,
         },
@@ -31,19 +30,13 @@ const createOrder = async (req: Request, res: Response) => {
 const getQuote = async (req: Request, res: Response) => {
   try {
     const { items } = req.body;
-    const itemPricePromises = items.map(async (element: Item) => {
-      const price = await getMenuItemPriceByID(element.itemId);
-      return { ...element, price: price! };
-    });
-    const ItemsArray: Item[] = await Promise.all(itemPricePromises);
-    const subtotal = calculateTotalAmount(ItemsArray);
-    const tax = subtotal * 0.18;
-
-    return res.status(200).send({ subtotal, tax, GrandTotal: subtotal + tax });
+    const result = calculateQuote(items);
+    return res.status(200).send(result);
   } catch (error) {
     return res.send(error);
   }
 };
+
 const getOrderById = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
@@ -90,11 +83,31 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 };
 
+// const getTaxInfo = async () => {
+//   try {
+//     const result = await PrismaClient
+//   } catch (error) {
+//     return 0
+//   }
+// };
+
 export { createOrder, getOrderById, getAllOrders, getQuote };
 
-function calculateTotalAmount(items: Item[]) {
+const calculateTotalAmount = async (items: Item[]) => {
   return items.reduce((total, item) => total + item.quantity * item.price, 0);
-}
+};
+
+const calculateQuote = async (items: Item[]) => {
+  const itemPricePromises = items.map(async (element: Item) => {
+    const price = await getMenuItemPriceByID(element.itemId);
+    return { ...element, price: price! };
+  });
+  const ItemsArray: Item[] = await Promise.all(itemPricePromises);
+  const subtotal = await calculateTotalAmount(ItemsArray);
+  const tax = subtotal * 0.18;
+  const GrandTotal = subtotal + tax;
+  return { ItemsArray, subtotal, tax, GrandTotal };
+};
 
 type Item = {
   itemId: string;
