@@ -81,6 +81,9 @@ const getAllOrders = async (req: Request, res: Response) => {
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
     return res.status(200).send(result);
   } catch (error) {
