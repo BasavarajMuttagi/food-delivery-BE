@@ -2,19 +2,22 @@ import PrismaClient from "../../prisma/PrismaClient";
 import { Request, Response } from "express";
 import { tokenType } from "../middlewares/auth.middleware";
 import { getMenuItemPriceByID } from "./menu.controller";
+import { TaxRule } from "@prisma/client";
 
 const createOrder = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
     const { items } = req.body;
-    const { ItemsArray, subtotal, tax, GrandTotal } = await calculateQuote(
-      items
-    );
+    const { ItemsArray, subtotal, tax, GrandTotal, taxRate } =
+      await calculateQuote(items);
 
     const order = await PrismaClient.order.create({
       data: {
         userId: user.userId,
-        totalAmount: GrandTotal,
+        total: GrandTotal,
+        subtotal,
+        tax_rate: taxRate,
+        tax,
         OrderItem: {
           create: ItemsArray,
         },
@@ -83,14 +86,6 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 };
 
-// const getTaxInfo = async () => {
-//   try {
-//     const result = await PrismaClient
-//   } catch (error) {
-//     return 0
-//   }
-// };
-
 export { createOrder, getOrderById, getAllOrders, getQuote };
 
 const calculateTotalAmount = async (items: Item[]) => {
@@ -102,11 +97,33 @@ const calculateQuote = async (items: Item[]) => {
     const price = await getMenuItemPriceByID(element.itemId);
     return { ...element, price: price! };
   });
+  const result = (await getTaxInfo()) as TaxRule;
   const ItemsArray: Item[] = await Promise.all(itemPricePromises);
   const subtotal = await calculateTotalAmount(ItemsArray);
-  const tax = subtotal * 0.18;
+  const tax = subtotal * (result.taxRate / 100);
   const GrandTotal = subtotal + tax;
-  return { ItemsArray, subtotal, tax, GrandTotal };
+  return {
+    ItemsArray,
+    subtotal,
+    tax,
+    GrandTotal,
+    taxRate: result.taxRate,
+    taxType: result.taxType,
+  };
+};
+
+const getTaxInfo = async () => {
+  try {
+    const result = await PrismaClient.taxRule.findUnique({
+      where: {
+        id: "cluzefx4g000037p5y1e49ji8",
+      },
+    });
+
+    return result;
+  } catch (error) {
+    return error;
+  }
 };
 
 type Item = {
