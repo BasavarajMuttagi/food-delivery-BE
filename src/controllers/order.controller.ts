@@ -8,8 +8,8 @@ const createOrder = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
     const { items, couponCode } = req.body;
-    const { ItemsArray, subtotal, tax, GrandTotal, taxRate } =
-      await calculateQuote(items);
+    const { ItemsArray, subtotal, tax, GrandTotal, taxRate, discount } =
+      (await calculateQuote(items, couponCode)) as QuoteType;
 
     const order = await PrismaClient.order.create({
       data: {
@@ -18,6 +18,8 @@ const createOrder = async (req: Request, res: Response) => {
         subtotal,
         tax_rate: taxRate,
         tax,
+        couponCode,
+        discountValue: discount?.saved,
         OrderItem: {
           create: ItemsArray,
         },
@@ -118,6 +120,7 @@ const calculateQuote = async (items: Item[], couponCode?: string) => {
       finalResponseObject.discount = discount;
       finalResponseObject.isDiscountApplied = true;
       finalResponseObject.discountError = false;
+      finalResponseObject.ItemsArray = ItemsArray;
     } catch (error: any) {
       const tax = subtotal * (result.taxRate / 100);
       const GrandTotal = subtotal + tax;
@@ -130,6 +133,7 @@ const calculateQuote = async (items: Item[], couponCode?: string) => {
       finalResponseObject.taxType = result.taxType;
       finalResponseObject.isDiscountApplied = true;
       finalResponseObject.discountError = true;
+      finalResponseObject.ItemsArray = ItemsArray;
     }
   } else {
     const tax = subtotal * (result.taxRate / 100);
@@ -140,6 +144,7 @@ const calculateQuote = async (items: Item[], couponCode?: string) => {
     finalResponseObject.taxRate = result.taxRate;
     finalResponseObject.taxType = result.taxType;
     finalResponseObject.isDiscountApplied = false;
+    finalResponseObject.ItemsArray = ItemsArray;
   }
 
   return finalResponseObject;
@@ -226,4 +231,24 @@ type Item = {
   itemId: string;
   quantity: number;
   price: number;
+};
+
+type Discount = {
+  originalSubTotal: number;
+  subtotal: number;
+  couponCode: string;
+  saved: number;
+  error: string;
+};
+
+type QuoteType = {
+  GrandTotal: number;
+  subtotal: number;
+  tax: number;
+  taxRate: number;
+  taxType: string;
+  isDiscountApplied: boolean;
+  discount?: Discount;
+  discountError?: boolean;
+  ItemsArray: Item[];
 };

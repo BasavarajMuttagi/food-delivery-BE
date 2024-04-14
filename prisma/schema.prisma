@@ -40,16 +40,18 @@ model Favorite {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  user      User        @relation(fields: [userId], references: [id])
-  userId    String
-  total     Float
-  subtotal  Float
-  tax       Float
-  tax_rate  Float
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  OrderItem OrderItem[]
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  total         Float
+  subtotal      Float
+  tax           Float
+  tax_rate      Float
+  couponCode    String      @default("")
+  discountValue Float       @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  OrderItem     OrderItem[]
 }
 
 model OrderItem {
