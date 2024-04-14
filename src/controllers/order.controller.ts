@@ -107,6 +107,7 @@ const calculateQuote = async (items: Item[], couponCode?: string) => {
   if (couponCode) {
     try {
       discount = (await applyDiscount(subtotal, couponCode)) as DiscountResult;
+      console.log(discount);
       const tax = discount?.subtotal * (result.taxRate / 100);
       const GrandTotal = discount?.subtotal + tax;
       finalResponseObject.subtotal = discount?.subtotal;
@@ -173,6 +174,7 @@ const getDiscount = async (couponCode: string) => {
 };
 
 const applyDiscount = async (subtotal: number, couponCode: string) => {
+  const originalSubTotal = subtotal;
   const discount = (await getDiscount(couponCode)) as CouponCode;
   if (discount == null) {
     throw new Error("coupon invalid");
@@ -188,7 +190,7 @@ const applyDiscount = async (subtotal: number, couponCode: string) => {
     }
     const deduction = subtotal * (discount.value / 100);
     subtotal -= deduction;
-    return { subtotal, couponCode, saved: deduction };
+    return { originalSubTotal, subtotal, couponCode, saved: deduction };
   }
 
   if (discount.discountType === "FIXED_AMOUNT") {
@@ -203,7 +205,7 @@ const applyDiscount = async (subtotal: number, couponCode: string) => {
     }
 
     subtotal -= discount.value;
-    return { subtotal, couponCode, saved: discount.value };
+    return { originalSubTotal, subtotal, couponCode, saved: discount.value };
   }
 
   throw new Error("coupon invalid");
@@ -214,6 +216,7 @@ const isDateInRange = (dateToCheck: Date, startDate: Date, endDate: Date) => {
 };
 
 type DiscountResult = {
+  originalSubTotal: number;
   subtotal: number;
   couponCode: string;
   saved: number;
