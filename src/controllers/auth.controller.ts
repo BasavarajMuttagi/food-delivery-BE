@@ -40,7 +40,6 @@ const SignUpUser = async (req: Request, res: Response) => {
 const LoginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
     const User = await PrismaClient.user.findUnique({
       where: {
         email,

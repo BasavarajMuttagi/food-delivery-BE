@@ -34,7 +34,6 @@ const getQuote = async (req: Request, res: Response) => {
   try {
     const { items } = req.body;
     const result = await calculateQuote(items);
-    console.log(result);
     return res.status(200).send(result);
   } catch (error) {
     return res.send(error);
