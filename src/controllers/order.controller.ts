@@ -33,7 +33,8 @@ const createOrder = async (req: Request, res: Response) => {
 const getQuote = async (req: Request, res: Response) => {
   try {
     const { items } = req.body;
-    const result = calculateQuote(items);
+    const result = await calculateQuote(items);
+    console.log(result);
     return res.status(200).send(result);
   } catch (error) {
     return res.send(error);
@@ -98,6 +99,7 @@ const calculateQuote = async (items: Item[]) => {
     return { ...element, price: price! };
   });
   const result = (await getTaxInfo()) as TaxRule;
+
   const ItemsArray: Item[] = await Promise.all(itemPricePromises);
   const subtotal = await calculateTotalAmount(ItemsArray);
   const tax = subtotal * (result.taxRate / 100);
