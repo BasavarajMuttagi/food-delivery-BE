@@ -15,7 +15,7 @@ const getMenu = async (req: Request, res: Response) => {
             'name', name,
             'description', description,
             'price', price,
-            'diet', "dietType",
+            'dietType', "dietType",
             'imageUrl', "imageUrl"
           ) ORDER BY name
         ) AS items_in_category
