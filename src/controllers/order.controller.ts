@@ -46,6 +46,9 @@ const getOrderById = async (req: Request, res: Response) => {
   try {
     const user = req.body.user as tokenType;
     const id = req.params.id;
+    if (id.length == 0) {
+      return res.sendStatus(400);
+    }
     const result = await PrismaClient.order.findUnique({
       where: {
         id,
@@ -91,7 +94,44 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 };
 
-export { createOrder, getOrderById, getAllOrders, getQuote };
+const reOrder = async (req: Request, res: Response) => {
+  try {
+    const user = req.body.user as tokenType;
+    const id = req.params.id;
+    if (id.length == 0) {
+      console.log(id);
+      return res.sendStatus(400);
+    }
+    const result = await PrismaClient.order.findUnique({
+      where: {
+        id,
+        userId: user.userId,
+      },
+      select: {
+        OrderItem: {
+          select: {
+            itemId: true,
+            quantity: true,
+            menuItem: {
+              select: {
+                description: true,
+                dietType: true,
+                imageUrl: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const flattenedResult = flattenResult(result?.OrderItem!);
+    return res.status(201).send({ result: flattenedResult });
+  } catch (error) {
+    return res.send(error);
+  }
+};
+
+export { createOrder, getOrderById, getAllOrders, getQuote, reOrder };
 
 const calculateTotalAmount = async (items: Item[]) => {
   return items.reduce((total, item) => total + item.quantity * item.price, 0);
@@ -254,4 +294,28 @@ type QuoteType = {
   discount?: Discount;
   discountError?: boolean;
   ItemsArray: Item[];
+};
+
+type OrderItem = {
+  itemId: string;
+  quantity: number;
+  menuItem: {
+    description: string;
+    dietType: "VEG" | "NON_VEG";
+    imageUrl: string;
+    name: string;
+  };
+};
+
+const flattenResult = (result: OrderItem[]) => {
+  const newResponse = result.map((item) => ({
+    itemId: item.itemId,
+    quantity: item.quantity,
+    description: item.menuItem.description,
+    dietType: item.menuItem.dietType,
+    imageUrl: item.menuItem.imageUrl,
+    name: item.menuItem.name,
+  }));
+
+  return newResponse;
 };
