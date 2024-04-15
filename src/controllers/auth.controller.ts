@@ -33,7 +33,8 @@ const SignUpUser = async (req: Request, res: Response) => {
 
     res.status(201).send({ message: "Account Created SuccessFully!", record });
   } catch (error) {
-    res.status(500).send({ message: "Error Occured , Please Try Again!" });
+    console.log(error)
+    res.status(500).send({ message: "Error Occured , Please Try Again!" ,error});
   }
 };
 
