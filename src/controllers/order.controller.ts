@@ -63,7 +63,10 @@ const getOrderById = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(201).send(result);
+    if (!result) {
+      return res.status(409).send({ message: "order not found!" });
+    }
+    return res.status(200).send(result);
   } catch (error) {
     return res.send(error);
   }
