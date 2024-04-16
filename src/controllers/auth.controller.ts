@@ -96,6 +96,7 @@ const getUserInfo = async (req: Request, res: Response) => {
         state: true,
         fullname: true,
         city: true,
+        phone: true,
       },
     });
 
