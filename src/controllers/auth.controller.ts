@@ -3,6 +3,7 @@ import * as bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import PrismaClient from "../../prisma/PrismaClient";
 import { DB_SECRET } from "../..";
+import { tokenType } from "../middlewares/auth.middleware";
 
 const SignUpUser = async (req: Request, res: Response) => {
   try {
@@ -33,8 +34,10 @@ const SignUpUser = async (req: Request, res: Response) => {
 
     res.status(201).send({ message: "Account Created SuccessFully!", record });
   } catch (error) {
-    console.log(error)
-    res.status(500).send({ message: "Error Occured , Please Try Again!" ,error});
+    console.log(error);
+    res
+      .status(500)
+      .send({ message: "Error Occured , Please Try Again!", error });
   }
 };
 
@@ -80,4 +83,26 @@ const LoginUser = async (req: Request, res: Response) => {
   }
 };
 
-export { SignUpUser, LoginUser };
+const getUserInfo = async (req: Request, res: Response) => {
+  try {
+    const user = req.body.user as tokenType;
+    const result = await PrismaClient.user.findUnique({
+      where: {
+        id: user.userId,
+      },
+      select: {
+        address: true,
+        country: true,
+        state: true,
+        fullname: true,
+        city: true,
+      },
+    });
+
+    return res.status(200).send({ result });
+  } catch (error) {
+    res.status(500).send({ message: "Error Occured , Please Try Again!" });
+  }
+};
+
+export { SignUpUser, LoginUser, getUserInfo };
