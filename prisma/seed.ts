@@ -384,8 +384,6 @@ async function main() {
         category: category as IndianMenuCategory,
       },
     });
-
-    console.log(result);
   });
 }
 main()

@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 import { Request, Response, NextFunction } from "express";
-import { DB_SECRET } from "../..";
+import { CAPTCHA_SECRET, CAPTCHA_VERIFY_ENDPOINT, DB_SECRET } from "../..";
+import axios from "axios";
 
 export type tokenType = {
   userId: string;
@@ -28,4 +29,25 @@ const validateToken = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-export { validateToken };
+const validateCaptchaToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await axios.post(CAPTCHA_VERIFY_ENDPOINT, {
+      secret: CAPTCHA_SECRET,
+      response: req.body.token,
+      remoteip: req.ip,
+    });
+    if (result.data.success) {
+      next();
+    } else {
+      throw new Error("Please Refresh And Try Again");
+    }
+  } catch (error: any) {
+    return res.status(400).send({ message: error.message });
+  }
+};
+
+export { validateToken, validateCaptchaToken };

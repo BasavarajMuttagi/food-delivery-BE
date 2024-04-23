@@ -102,7 +102,6 @@ const reOrder = async (req: Request, res: Response) => {
     const user = req.body.user as tokenType;
     const id = req.params.id;
     if (id.length == 0) {
-      console.log(id);
       return res.sendStatus(400);
     }
     const result = await PrismaClient.order.findUnique({

@@ -24,7 +24,6 @@ const calculateQuote = async (items: Item[], couponCode?: string) => {
   if (couponCode) {
     try {
       discount = (await applyDiscount(subtotal, couponCode)) as DiscountResult;
-      console.log(discount);
       const tax = discount?.subtotal * (result.taxRate / 100);
       const GrandTotal = discount?.subtotal + tax;
       finalResponseObject.subtotal = discount?.subtotal;
